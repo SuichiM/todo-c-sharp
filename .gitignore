@@ -1,0 +1,22 @@
+# .env files
+.env
+.env.local
+.env.*.local
+
+# User-specific files
+*.user
+*.userosscache
+*.suo
+
+# Build results
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+
+# Visual Studio
+.vs/
+.vscode/
+
+# User secrets
+secrets.json
