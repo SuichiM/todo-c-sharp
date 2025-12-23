@@ -2,6 +2,10 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS development
 WORKDIR /app
 
+# Install EF Core tools globally with specific version
+RUN dotnet tool install --global dotnet-ef --version 9.0.0
+ENV PATH="${PATH}:/root/.dotnet/tools"
+
 # Copy csproj and restore dependencies
 COPY *.csproj ./
 RUN dotnet restore

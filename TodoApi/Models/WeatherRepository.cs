@@ -1,24 +1,20 @@
-using System;
+using Microsoft.EntityFrameworkCore;
+using TodoApi.Data;
 using TodoApi.Models;
 
 namespace TodoApi.Repositories;
 
 public class WeatherRepository : IBaseRepository<WeatherForecast>
 {
+  private readonly AppDbContext _context;
 
-  private static readonly string[] Summaries = new[]
+  public WeatherRepository(AppDbContext context)
   {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-  };
+    _context = context;
+  }
 
   public async Task<IEnumerable<WeatherForecast>> GetAllAsync()
   {
-    return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-    {
-      Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-      TemperatureC = Random.Shared.Next(-20, 55),
-      Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-    })
-    .ToArray();
+    return await _context.WeatherForecasts.ToListAsync();
   }
 }
