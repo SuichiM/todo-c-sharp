@@ -1,20 +1,21 @@
-using Microsoft.EntityFrameworkCore;
 using TodoApi.Data;
 using TodoApi.Models;
 
 namespace TodoApi.Repositories;
 
-public class WeatherRepository : IBaseRepository<WeatherForecast>
+/// <summary>
+/// Weather-specific repository. Inherits common CRUD operations from BaseRepository.
+/// Add weather-specific query methods here as needed.
+/// </summary>
+public class WeatherRepository : BaseRepository<WeatherForecast>
 {
-  private readonly AppDbContext _context;
-
-  public WeatherRepository(AppDbContext context)
+  public WeatherRepository(AppDbContext context) : base(context)
   {
-    _context = context;
   }
 
-  public async Task<IEnumerable<WeatherForecast>> GetAllAsync()
-  {
-    return await _context.WeatherForecasts.ToListAsync();
-  }
+  // Add weather-specific methods here, for example:
+  // public async Task<IEnumerable<WeatherForecast>> GetByTemperatureRangeAsync(int min, int max)
+  // {
+  //   return await DbSet.Where(w => w.TemperatureC >= min && w.TemperatureC <= max).ToListAsync();
+  // }
 }

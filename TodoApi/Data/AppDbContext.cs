@@ -9,18 +9,16 @@ public class AppDbContext : DbContext
   {
   }
 
-  /* TODO: check if this should be done for all the models, or could we have something generic */
+  // DbSet properties are optional - EF Core will discover entities through configurations
+  // However, keeping them provides better IntelliSense and makes querying more convenient
   public DbSet<WeatherForecast> WeatherForecasts { get; set; }
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
     base.OnModelCreating(modelBuilder);
 
-    // Configure WeatherForecast entity
-    modelBuilder.Entity<WeatherForecast>(entity =>
-    {
-      entity.HasKey(e => e.Id);
-      entity.Property(e => e.Summary).HasMaxLength(200);
-    });
+    // Automatically apply all IEntityTypeConfiguration implementations from this assembly
+    // This eliminates the need to manually configure each entity here
+    modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
   }
 }

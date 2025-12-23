@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Add services to the container.
+// Add repositories to the container.
 builder.Services.AddScoped<IBaseRepository<WeatherForecast>, TodoApi.Repositories.WeatherRepository>();
 
 builder.Services.AddControllers();
