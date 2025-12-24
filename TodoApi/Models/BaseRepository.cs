@@ -24,4 +24,23 @@ public class BaseRepository<T> : IBaseRepository<T> where T : class
   {
     return await DbSet.ToListAsync();
   }
+
+  /// <summary>
+  /// Find entity by primary key (assumes Id property).
+  /// FindAsync is optimized for primary key lookups.
+  /// </summary>
+  public virtual async Task<T?> GetByIdAsync(int id)
+  {
+    return await DbSet.FindAsync(id);
+  }
+
+  /// <summary>
+  /// Check if entity exists without loading it.
+  /// More efficient than GetByIdAsync when you only need to check existence.
+  /// </summary>
+  public virtual async Task<bool> ExistsAsync(int id)
+  {
+    var entity = await GetByIdAsync(id);
+    return entity != null;
+  }
 }

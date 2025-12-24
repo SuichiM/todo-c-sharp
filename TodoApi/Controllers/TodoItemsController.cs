@@ -1,30 +1,35 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using TodoApi.Data;
 using TodoApi.Models;
 using TodoApi.DTOs;
+using TodoApi.Repositories;
 
 namespace TodoApi.Controllers;
 
 /// <summary>
-/// TodoItems API Controller - Educational version using direct DbContext.
-/// This demonstrates how EF Core queries work before abstracting to repository pattern.
-/// Similar to Laravel's approach: Query Builder → Eloquent → Repository
+/// TodoItems API Controller - Now using Repository Pattern.
+/// Controller focuses on HTTP concerns, repositories handle data access.
+/// Similar to Laravel's best practice: Controller → Repository → Model
 /// </summary>
 [ApiController]
 [Route("api/todos")]  // Results in: /api/todos
 public class TodoItemsController : ControllerBase
 {
-  private readonly AppDbContext _context;
+  private readonly ITodoRepository _todoRepository;
+  private readonly IBaseRepository<Category> _categoryRepository;
   private readonly ILogger<TodoItemsController> _logger;
 
   /// <summary>
-  /// Constructor injection - ASP.NET Core's built-in dependency injection
-  /// Similar to Laravel's constructor injection
+  /// Constructor injection - Now using repositories instead of DbContext.
+  /// Repositories abstract away EF Core details, making controller cleaner and more testable.
+  /// Similar to Laravel's repository pattern injection.
   /// </summary>
-  public TodoItemsController(AppDbContext context, ILogger<TodoItemsController> logger)
+  public TodoItemsController(
+      ITodoRepository todoRepository,
+      IBaseRepository<Category> categoryRepository,
+      ILogger<TodoItemsController> logger)
   {
-    _context = context;
+    _todoRepository = todoRepository;
+    _categoryRepository = categoryRepository;
     _logger = logger;
   }
 
@@ -37,30 +42,17 @@ public class TodoItemsController : ControllerBase
   [ProducesResponseType(StatusCodes.Status200OK)]
   public async Task<ActionResult<IEnumerable<TodoItemDto>>> GetTodoItems()
   {
-    // EDUCATIONAL POINT: Direct DbContext usage
-    // _context.Set<TodoItem>() gets the DbSet for TodoItem entity
-    // This is how BaseRepository accesses entities dynamically
-
-    // ⚠️ N+1 QUERY PROBLEM EXAMPLE (DON'T DO THIS):
-    // var todos = await _context.Set<TodoItem>().ToListAsync();
-    // Accessing todo.Category later would trigger individual queries for each todo!
-
-    // ✅ CORRECT APPROACH: Eager loading with Include()
-    var todos = await _context.Set<TodoItem>()
-        .Include(t => t.Category)           // LEFT JOIN with Categories table
-        .OrderByDescending(t => t.CreatedAt) // ORDER BY CreatedAt DESC
-        .ToListAsync();                      // Execute query and materialize results
-
-    // LINQ Translation: This becomes approximately:
-    // SELECT t.*, c.* 
-    // FROM TodoItems t 
-    // LEFT JOIN Categories c ON t.CategoryId = c.Id
-    // ORDER BY t.CreatedAt DESC
+    // REPOSITORY PATTERN: Much cleaner than direct DbContext!
+    // Repository handles:
+    // - EF Core query construction
+    // - Eager loading (Include)
+    // - Ordering logic
     //
-    // Because Category is nullable (Category? and int? CategoryId),
-    // EF Core generates a LEFT JOIN, allowing todos without categories.
+    // Controller just asks for data and returns it
+    // Similar to Laravel: $todos = $this->todoRepository->getAll();
+    var todos = await _todoRepository.GetTodosWithCategoryAsync();
 
-    _logger.LogInformation("Retrieved {Count} todo items", todos.Count);
+    _logger.LogInformation("Retrieved {Count} todo items", todos.Count());
 
     return Ok(TodoItemDto.Collection(todos));
   }
@@ -76,21 +68,17 @@ public class TodoItemsController : ControllerBase
   [ProducesResponseType(StatusCodes.Status404NotFound)]
   public async Task<ActionResult<TodoItemDto>> GetTodoItem(int id)
   {
-    // FirstOrDefaultAsync returns the first match or null
-    // Similar to Laravel's Model::where('id', $id)->first()
-    var todo = await _context.Set<TodoItem>()
-        .Include(t => t.Category)
-        .FirstOrDefaultAsync(t => t.Id == id);
+    // Repository method handles eager loading automatically
+    // No need to worry about Include() in controller
+    var todo = await _todoRepository.GetTodoWithCategoryAsync(id);
 
     if (todo == null)
     {
       _logger.LogWarning("Todo item {Id} not found", id);
-
-      // NotFound() returns 404 status with optional body
       return NotFound(new { message = $"Todo item with ID {id} not found" });
     }
 
-    return Ok(TodoItemDto.Make(todo));  // 200 OK with todo data
+    return Ok(TodoItemDto.Make(todo));
   }
 
   /// <summary>
@@ -104,28 +92,19 @@ public class TodoItemsController : ControllerBase
   [ProducesResponseType(StatusCodes.Status404NotFound)]
   public async Task<ActionResult<IEnumerable<TodoItemDto>>> GetTodosByCategory(int categoryId)
   {
-    // Check if category exists first
-    // AnyAsync is efficient - just checks existence without loading data
-    // Similar to Laravel's Model::exists()
-    var categoryExists = await _context.Set<Category>()
-        .AnyAsync(c => c.Id == categoryId);
-
-    if (!categoryExists)
+    // Use ExistsAsync - more efficient than loading the entire entity
+    // Similar to Laravel: if (!Category::where('id', $id)->exists())
+    if (!await _categoryRepository.ExistsAsync(categoryId))
     {
       return NotFound(new { message = $"Category with ID {categoryId} not found" });
     }
 
-    // Query todos for this category
-    // Where() adds a filter condition (WHERE clause in SQL)
-    var todos = await _context.Set<TodoItem>()
-        .Include(t => t.Category)
-        .Where(t => t.CategoryId == categoryId)  // WHERE CategoryId = @categoryId
-        .OrderByDescending(t => t.CreatedAt)
-        .ToListAsync();
+    // Repository method encapsulates the query logic
+    var todos = await _todoRepository.GetTodosByCategoryAsync(categoryId);
 
     _logger.LogInformation(
         "Retrieved {Count} todos for category {CategoryId}",
-        todos.Count,
+        todos.Count(),
         categoryId);
 
     return Ok(TodoItemDto.Collection(todos));
@@ -139,12 +118,8 @@ public class TodoItemsController : ControllerBase
   [ProducesResponseType(StatusCodes.Status200OK)]
   public async Task<ActionResult<IEnumerable<TodoItemDto>>> GetCompletedTodos()
   {
-    // Filtering by IsCompleted status
-    var todos = await _context.Set<TodoItem>()
-        .Include(t => t.Category)
-        .Where(t => t.IsCompleted)  // WHERE IsCompleted = true
-        .OrderByDescending(t => t.CreatedAt)
-        .ToListAsync();
+    // Repository encapsulates filtering logic
+    var todos = await _todoRepository.GetCompletedTodosAsync();
 
     return Ok(TodoItemDto.Collection(todos));
   }
@@ -157,11 +132,7 @@ public class TodoItemsController : ControllerBase
   [ProducesResponseType(StatusCodes.Status200OK)]
   public async Task<ActionResult<IEnumerable<TodoItemDto>>> GetPendingTodos()
   {
-    var todos = await _context.Set<TodoItem>()
-        .Include(t => t.Category)
-        .Where(t => !t.IsCompleted)  // WHERE IsCompleted = false
-        .OrderByDescending(t => t.CreatedAt)
-        .ToListAsync();
+    var todos = await _todoRepository.GetPendingTodosAsync();
 
     return Ok(TodoItemDto.Collection(todos));
   }
@@ -174,18 +145,10 @@ public class TodoItemsController : ControllerBase
   [ProducesResponseType(StatusCodes.Status200OK)]
   public async Task<ActionResult<IEnumerable<TodoItemDto>>> GetOverdueTodos()
   {
-    var now = DateTime.UtcNow;
+    // Repository encapsulates complex filtering logic
+    var todos = await _todoRepository.GetOverdueTodosAsync();
 
-    // Complex WHERE clause with multiple conditions
-    var todos = await _context.Set<TodoItem>()
-        .Include(t => t.Category)
-        .Where(t => !t.IsCompleted &&           // Not completed
-                   t.DueTime.HasValue &&        // Has a due time
-                   t.DueTime.Value < now)       // Due time is in the past
-        .OrderBy(t => t.DueTime)                // Sort by most overdue first
-        .ToListAsync();
-
-    _logger.LogInformation("Found {Count} overdue todos", todos.Count);
+    _logger.LogInformation("Found {Count} overdue todos", todos.Count());
 
     return Ok(TodoItemDto.Collection(todos));
   }

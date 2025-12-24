@@ -10,10 +10,11 @@
   - [x] Create TodoItemsController with DbContext
   - [x] Implement GET endpoints with eager loading
   - [x] Create and use DTOs for responses
-- [ ] **Phase 3: Repository Pattern Implementation**
-  - [ ] Create Repository Classes
-  - [ ] Register Repositories in DI
-  - [ ] Refactor Controller to Use Repository
+- [x] **Phase 3: Repository Pattern Implementation** ✅
+  - [x] Create Repository Classes (TodoRepository, CategoryRepository)
+  - [x] Add GetByIdAsync and ExistsAsync to BaseRepository
+  - [x] Register Repositories in DI
+  - [x] Refactor Controller to Use Repository
 - [ ] **Phase 4: DTOs and Validation with FluentValidation**
   - [ ] Install FluentValidation
   - [ ] Create Request/Response DTOs

@@ -80,16 +80,29 @@ Dockerfile              # Container image definition
 - **Entity Framework Core** - ORM
 - **Docker** - Containerization
 
+## Endpoints
+
+- `GET /api/todos` - Get all todo items
+- `GET /api/todos/{id}` - Get a specific todo item
+- `GET /api/todos/category/{id}` - Get todo items by category
+- `GET /api/todos/completed` - Get completed todo items
+- `GET /api/todos/pending` - Get pending todo items
+- `GET /api/todos/overdue` - Get overdue todo items
+-
+
 ## Learning checkpoints
 
 - [x] Setting up ASP.NET Core Web API
 - [x] Initial WheaterForecast endpoint
 - [x] Configuring Entity Framework Core with PostgreSQL
 - [x] Basics on Entity framework vs Eloquent
-- [x] Creating and applying migrations
+- [x] Creating Models Items and Categories and applying migrations
 - [x] Defining data models and relationships
 - [x] Setting up Docker and Docker Compose
 - [x] Environment variable management with .env files
+- [x] Repository pattern for data access
+- [x] Implementing Categories model and repository
+- [x] DTOs for responses shapes similar to Laravel Resources
 - [ ] Basics on Request handling => DTO + Validator
-- [] Implementing RESTful API endpoints for reads Todo Items with Categories
-- [] Implementing RESTful API endpoints for creating, updating, and deleting Todo Items
+- [ ] Implementing RESTful API endpoints for reads Todo Items with Categories
+- [ ] Implementing RESTful API endpoints for creating, updating, and deleting Todo Items
