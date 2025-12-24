@@ -34,6 +34,53 @@ as I've a background in PHP and Laravel framework, I try to find similarities an
 > In ASP.NET Core, you evolve the database by evolving your models.
 > Migrations are a generated artifact, not the main design tool.
 
+### Typical Workflow (Recommended)
+
+1. Change your model.
+
+```csharp
+// ✅ Clear model with explicit FK
+public class TodoItem
+{
+    public int Id { get; set; }
+    public string Title { get; set; }
+    public bool IsCompleted { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime? DueTime { get; set; }
+    public int CategoryId { get; set; }      // Explicit FK
+    public Category? Category { get; set; }   // Navigation (nullable for optional)
+}
+
+public class Category
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+
+    // Collection navigation property
+    public List<TodoItem> TodoItems { get; set; } = new();
+}
+```
+
+### optional step if required - create Fluent API configuration
+
+### Step 2: Generate migration
+
+```bash
+  dotnet ef migrations add AddTodoItemAndCategory
+```
+
+### Step 3: review sql migration code
+
+```bash
+dotnet ef migrations script
+```
+
+### Step 4: Apply migration
+
+```bash
+  dotnet ef database update
+```
+
 ## Request
 
 - Laravel => $request + Request class + Form Requests

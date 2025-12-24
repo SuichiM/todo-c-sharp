@@ -79,3 +79,17 @@ Dockerfile              # Container image definition
 - **PostgreSQL 16** - Database
 - **Entity Framework Core** - ORM
 - **Docker** - Containerization
+
+## Learning checkpoints
+
+- [x] Setting up ASP.NET Core Web API
+- [x] Initial WheaterForecast endpoint
+- [x] Configuring Entity Framework Core with PostgreSQL
+- [x] Basics on Entity framework vs Eloquent
+- [x] Creating and applying migrations
+- [x] Defining data models and relationships
+- [x] Setting up Docker and Docker Compose
+- [x] Environment variable management with .env files
+- [ ] Basics on Request handling => DTO + Validator
+- [] Implementing RESTful API endpoints for reads Todo Items with Categories
+- [] Implementing RESTful API endpoints for creating, updating, and deleting Todo Items
