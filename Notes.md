@@ -93,5 +93,11 @@ dotnet ef migrations script
 
 ### Project Layers
 
+Laravel => Asp.NET
+
+- FormRequests => DTO + Fluent Validation
+- Services => Services
+- Repositories => Repositories
 - Controllers => Controllers
 - Models => Models
+- Resources => DTOs + AutoMapper (for scaling)

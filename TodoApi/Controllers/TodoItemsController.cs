@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TodoApi.Data;
 using TodoApi.Models;
+using TodoApi.DTOs;
 
 namespace TodoApi.Controllers;
 
@@ -34,7 +35,7 @@ public class TodoItemsController : ControllerBase
   /// <returns>List of all todo items</returns>
   [HttpGet]
   [ProducesResponseType(StatusCodes.Status200OK)]
-  public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodoItems()
+  public async Task<ActionResult<IEnumerable<TodoItemDto>>> GetTodoItems()
   {
     // EDUCATIONAL POINT: Direct DbContext usage
     // _context.Set<TodoItem>() gets the DbSet for TodoItem entity
@@ -61,7 +62,7 @@ public class TodoItemsController : ControllerBase
 
     _logger.LogInformation("Retrieved {Count} todo items", todos.Count);
 
-    return Ok(todos);  // Returns 200 OK with JSON body
+    return Ok(TodoItemDto.Collection(todos));
   }
 
   /// <summary>
@@ -73,7 +74,7 @@ public class TodoItemsController : ControllerBase
   [HttpGet("{id}")]
   [ProducesResponseType(StatusCodes.Status200OK)]
   [ProducesResponseType(StatusCodes.Status404NotFound)]
-  public async Task<ActionResult<TodoItem>> GetTodoItem(int id)
+  public async Task<ActionResult<TodoItemDto>> GetTodoItem(int id)
   {
     // FirstOrDefaultAsync returns the first match or null
     // Similar to Laravel's Model::where('id', $id)->first()
@@ -89,7 +90,7 @@ public class TodoItemsController : ControllerBase
       return NotFound(new { message = $"Todo item with ID {id} not found" });
     }
 
-    return Ok(todo);  // 200 OK with todo data
+    return Ok(TodoItemDto.Make(todo));  // 200 OK with todo data
   }
 
   /// <summary>
@@ -101,7 +102,7 @@ public class TodoItemsController : ControllerBase
   [HttpGet("category/{categoryId}")]
   [ProducesResponseType(StatusCodes.Status200OK)]
   [ProducesResponseType(StatusCodes.Status404NotFound)]
-  public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodosByCategory(int categoryId)
+  public async Task<ActionResult<IEnumerable<TodoItemDto>>> GetTodosByCategory(int categoryId)
   {
     // Check if category exists first
     // AnyAsync is efficient - just checks existence without loading data
@@ -127,7 +128,7 @@ public class TodoItemsController : ControllerBase
         todos.Count,
         categoryId);
 
-    return Ok(todos);
+    return Ok(TodoItemDto.Collection(todos));
   }
 
   /// <summary>
@@ -136,7 +137,7 @@ public class TodoItemsController : ControllerBase
   /// </summary>
   [HttpGet("completed")]
   [ProducesResponseType(StatusCodes.Status200OK)]
-  public async Task<ActionResult<IEnumerable<TodoItem>>> GetCompletedTodos()
+  public async Task<ActionResult<IEnumerable<TodoItemDto>>> GetCompletedTodos()
   {
     // Filtering by IsCompleted status
     var todos = await _context.Set<TodoItem>()
@@ -145,7 +146,7 @@ public class TodoItemsController : ControllerBase
         .OrderByDescending(t => t.CreatedAt)
         .ToListAsync();
 
-    return Ok(todos);
+    return Ok(TodoItemDto.Collection(todos));
   }
 
   /// <summary>
@@ -154,7 +155,7 @@ public class TodoItemsController : ControllerBase
   /// </summary>
   [HttpGet("pending")]
   [ProducesResponseType(StatusCodes.Status200OK)]
-  public async Task<ActionResult<IEnumerable<TodoItem>>> GetPendingTodos()
+  public async Task<ActionResult<IEnumerable<TodoItemDto>>> GetPendingTodos()
   {
     var todos = await _context.Set<TodoItem>()
         .Include(t => t.Category)
@@ -162,7 +163,7 @@ public class TodoItemsController : ControllerBase
         .OrderByDescending(t => t.CreatedAt)
         .ToListAsync();
 
-    return Ok(todos);
+    return Ok(TodoItemDto.Collection(todos));
   }
 
   /// <summary>
@@ -171,7 +172,7 @@ public class TodoItemsController : ControllerBase
   /// </summary>
   [HttpGet("overdue")]
   [ProducesResponseType(StatusCodes.Status200OK)]
-  public async Task<ActionResult<IEnumerable<TodoItem>>> GetOverdueTodos()
+  public async Task<ActionResult<IEnumerable<TodoItemDto>>> GetOverdueTodos()
   {
     var now = DateTime.UtcNow;
 
@@ -186,6 +187,6 @@ public class TodoItemsController : ControllerBase
 
     _logger.LogInformation("Found {Count} overdue todos", todos.Count);
 
-    return Ok(todos);
+    return Ok(TodoItemDto.Collection(todos));
   }
 }
