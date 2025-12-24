@@ -66,7 +66,7 @@ public class TodoItemsController : ControllerBase
   }
 
   /// <summary>
-  /// GET: api/TodoItems/5
+  /// GET: api/todos/5
   /// Retrieves a specific todo item by ID.
   /// </summary>
   /// <param name="id">The ID of the todo item</param>
@@ -94,7 +94,7 @@ public class TodoItemsController : ControllerBase
   }
 
   /// <summary>
-  /// GET: api/TodoItems/category/2
+  /// GET: api/todos/category/2
   /// Retrieves all todos for a specific category.
   /// </summary>
   /// <param name="categoryId">The ID of the category</param>
@@ -132,7 +132,7 @@ public class TodoItemsController : ControllerBase
   }
 
   /// <summary>
-  /// GET: api/TodoItems/completed
+  /// GET: api/todos/completed
   /// Retrieves all completed todos.
   /// </summary>
   [HttpGet("completed")]
@@ -150,7 +150,7 @@ public class TodoItemsController : ControllerBase
   }
 
   /// <summary>
-  /// GET: api/TodoItems/pending
+  /// GET: api/todos/pending
   /// Retrieves all pending (incomplete) todos.
   /// </summary>
   [HttpGet("pending")]
@@ -167,7 +167,7 @@ public class TodoItemsController : ControllerBase
   }
 
   /// <summary>
-  /// GET: api/TodoItems/overdue
+  /// GET: api/todos/overdue
   /// Retrieves all overdue todos (not completed and past due time).
   /// </summary>
   [HttpGet("overdue")]

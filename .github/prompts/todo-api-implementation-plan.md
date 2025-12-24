@@ -1,5 +1,35 @@
 # TODO API with Categories - Implementation Plan
 
+## Progress Checklist
+
+- [x] **Phase 1: Models & Database Schema** ✅
+  - [x] Create Model Classes (TodoItem, Category)
+  - [x] Configure Relationships with Fluent API
+  - [x] Generate and Apply Migrations
+- [x] **Phase 2: Controllers with Direct DbContext** ✅
+  - [x] Create TodoItemsController with DbContext
+  - [x] Implement GET endpoints with eager loading
+  - [x] Create and use DTOs for responses
+- [ ] **Phase 3: Repository Pattern Implementation**
+  - [ ] Create Repository Classes
+  - [ ] Register Repositories in DI
+  - [ ] Refactor Controller to Use Repository
+- [ ] **Phase 4: DTOs and Validation with FluentValidation**
+  - [ ] Install FluentValidation
+  - [ ] Create Request/Response DTOs
+  - [ ] Create Validators
+  - [ ] Register FluentValidation
+- [ ] **Phase 5: Full CRUD Operations**
+  - [ ] Expand BaseRepository with Create/Update/Delete
+  - [ ] Complete TodoItemsController CRUD
+  - [ ] Create CategoriesController
+- [ ] **Phase 6: Testing and Documentation**
+  - [ ] Add Unit Tests
+  - [ ] Add Integration Tests
+  - [ ] Enhance Swagger Documentation
+
+---
+
 ## Learning Objectives
 
 This plan will guide you through building a REST API for TODO management with categories using ASP.NET Core 9. You'll learn:
@@ -518,51 +548,6 @@ public class TodoRepository : BaseRepository<TodoItem>, ITodoRepository
 }
 ```
 
-**File:** `TodoApi/Models/CategoryRepository.cs`
-
-```csharp
-using Microsoft.EntityFrameworkCore;
-using TodoApi.Data;
-
-namespace TodoApi.Models;
-
-public interface ICategoryRepository : IBaseRepository<Category>
-{
-    Task<Category?> GetCategoryWithTodosAsync(int id);
-    Task<IEnumerable<Category>> GetCategoriesWithTodoCountAsync();
-    Task<bool> HasTodosAsync(int categoryId);
-}
-
-public class CategoryRepository : BaseRepository<Category>, ICategoryRepository
-{
-    public CategoryRepository(AppDbContext context) : base(context)
-    {
-    }
-
-    public async Task<Category?> GetCategoryWithTodosAsync(int id)
-    {
-        return await DbSet
-            .Include(c => c.TodoItems)
-            .FirstOrDefaultAsync(c => c.Id == id);
-    }
-
-    public async Task<IEnumerable<Category>> GetCategoriesWithTodoCountAsync()
-    {
-        // Load categories with their todo items for counting
-        return await DbSet
-            .Include(c => c.TodoItems)
-            .OrderBy(c => c.Name)
-            .ToListAsync();
-    }
-
-    public async Task<bool> HasTodosAsync(int categoryId)
-    {
-        return await Context.Set<TodoItem>()
-            .AnyAsync(t => t.CategoryId == categoryId);
-    }
-}
-```
-
 **Key Learning Points:**
 
 1. **Interface Segregation**: Each repository has its own interface
@@ -605,7 +590,6 @@ builder.Services.AddScoped<IBaseRepository<WeatherForecast>, WeatherRepository>(
 
 // Add these new registrations:
 builder.Services.AddScoped<ITodoRepository, TodoRepository>();
-builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 ```
 
 **Key Learning:**
@@ -630,21 +614,18 @@ namespace TodoApi.Controllers;
 public class TodoItemsController : ControllerBase
 {
     private readonly ITodoRepository _todoRepository;
-    private readonly ICategoryRepository _categoryRepository;
     private readonly ILogger<TodoItemsController> _logger;
 
     // Constructor injection: Now using repositories instead of DbContext
     public TodoItemsController(
         ITodoRepository todoRepository,
-        ICategoryRepository categoryRepository,
         ILogger<TodoItemsController> logger)
     {
         _todoRepository = todoRepository;
-        _categoryRepository = categoryRepository;
         _logger = logger;
     }
 
-    // GET: api/TodoItems
+    // GET: api/todos
     [HttpGet]
     public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodoItems()
     {
@@ -674,8 +655,8 @@ public class TodoItemsController : ControllerBase
     [HttpGet("category/{categoryId}")]
     public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodosByCategory(int categoryId)
     {
-        // Use repository method for existence check
-        var categoryExists = await _categoryRepository.HasTodosAsync(categoryId);
+        // TODO: implement a method in the repository to check category existence if needed
+
 
         var todos = await _todoRepository.GetTodosByCategoryAsync(categoryId);
         return Ok(todos);
