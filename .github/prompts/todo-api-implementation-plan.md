@@ -15,11 +15,13 @@
   - [x] Add GetByIdAsync and ExistsAsync to BaseRepository
   - [x] Register Repositories in DI
   - [x] Refactor Controller to Use Repository
-- [ ] **Phase 4: DTOs and Validation with FluentValidation**
-  - [ ] Install FluentValidation
-  - [ ] Create Request/Response DTOs
-  - [ ] Create Validators
-  - [ ] Register FluentValidation
+- [ ] **Phase 4: Request DTOs and Validation with FluentValidation**
+  - [x] Install FluentValidation
+  - [x] Create Request DTOs in `Requests/` folder
+  - [x] Create Validators co-located with Request DTOs
+  - [x] Register FluentValidation
+  - [x] Implement POST endpoint for TODO creation
+  - [ ] (Future) Create Update and Delete requests with validators
 - [ ] **Phase 5: Full CRUD Operations**
   - [ ] Expand BaseRepository with Create/Update/Delete
   - [ ] Complete TodoItemsController CRUD
@@ -718,6 +720,27 @@ var todos = await _todoRepository.GetPendingTodosAsync();
 
 ## Phase 4: DTOs and Validation with FluentValidation
 
+**Project Organization:**
+
+This phase introduces a clear separation between input and output data:
+
+- **`Requests/`** folder: Input DTOs and their validators (similar to Laravel Form Requests)
+
+  - Request DTOs define what clients send to the API
+  - Validators live alongside their requests for easy maintenance
+  - Example: `CreateTodoItemRequest.cs` + `CreateTodoItemRequestValidator.cs`
+
+- **`Controllers/TodoItemsResource.cs`**: Output DTOs (similar to Laravel API Resources)
+  - Response DTOs define what the API returns to clients
+  - Already exists with `TodoItemDto` and `CategoryDto`
+  - Uses static methods like `TodoItemDto.Make()` for transformation
+
+This structure provides:
+
+- Clear separation of concerns (input vs output)
+- Co-location of related code (request + validator)
+- Similar to Laravel's Form Requests and API Resources pattern
+
 ### Step 9: Install FluentValidation
 
 **Command:**
@@ -734,50 +757,41 @@ dotnet add package FluentValidation.AspNetCore
 - Better testability
 - Cleaner models (no validation attributes cluttering POCOs)
 
-### Step 10: Create DTOs (Data Transfer Objects)
+### Step 10: Create Request and Response DTOs
 
-**Why DTOs?**
+**Why separate Request and Response DTOs?**
 
 - **Separate API contract from database model**: API can change without affecting DB
 - **Security**: Control exactly what clients can send/receive
 - **Validation**: Validate input without polluting domain models
+- **Clarity**: Request DTOs (input) vs Response DTOs (output)
 - Similar to Laravel's Form Requests and API Resources
 
-**File:** `TodoApi/DTOs/TodoItemDto.cs`
+**Project Structure:**
+
+- `Requests/` folder: Input DTOs with their validators (similar to Laravel Form Requests)
+- `Controllers/TodoItemsResource.cs`: Output DTOs (similar to Laravel API Resources)
+
+**File:** `TodoApi/Requests/CreateTodoItemRequest.cs`
 
 ```csharp
-namespace TodoApi.DTOs;
+namespace TodoApi.Requests;
 
-// Request DTO for creating a new todo
-public class CreateTodoItemDto
+/// <summary>
+/// Request DTO for creating a new todo item.
+/// Similar to Laravel Form Request.
+/// </summary>
+public class CreateTodoItemRequest
 {
     public string Title { get; set; } = string.Empty;
     public int CategoryId { get; set; }
     public DateTime? DueTime { get; set; }
 }
-
-// Request DTO for updating a todo
-public class UpdateTodoItemDto
-{
-    public string? Title { get; set; }
-    public bool? IsCompleted { get; set; }
-    public int? CategoryId { get; set; }
-    public DateTime? DueTime { get; set; }
-}
-
-// Response DTO (what API returns)
-public class TodoItemResponseDto
-{
-    public int Id { get; set; }
-    public string Title { get; set; } = string.Empty;
-    public bool IsCompleted { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime? DueTime { get; set; }
-    public CategoryResponseDto? Category { get; set; }
-}
 ```
 
-**File:** `TodoApi/DTOs/CategoryDto.cs`
+**Note:** Response DTOs (`TodoItemDto`, `CategoryDto`) already exist in `Controllers/TodoItemsResource.cs` and are used for API responses.
+
+### Step 11: Create FluentValidation Validators
 
 ```csharp
 namespace TodoApi.DTOs;
@@ -800,22 +814,29 @@ public class CategoryResponseDto
 }
 ```
 
+_Note: These DTOs are shown for reference. For the TODO creation focus, only `CreateTodoItemRequest` is needed now._
+
 ### Step 11: Create FluentValidation Validators
 
-**File:** `TodoApi/Validators/CreateTodoItemDtoValidator.cs`
+**Important:** Validators are co-located with their request DTOs in the `Requests/` folder. This keeps validation logic close to the data it validates, similar to Laravel Form Requests.
+
+**File:** `TodoApi/Requests/CreateTodoItemRequestValidator.cs`
 
 ```csharp
 using FluentValidation;
-using TodoApi.DTOs;
 using TodoApi.Models;
 
-namespace TodoApi.Validators;
+namespace TodoApi.Requests;
 
-public class CreateTodoItemDtoValidator : AbstractValidator<CreateTodoItemDto>
+/// <summary>
+/// Validator for CreateTodoItemRequest.
+/// Similar to Laravel Form Request validation rules.
+/// </summary>
+public class CreateTodoItemRequestValidator : AbstractValidator<CreateTodoItemRequest>
 {
-    private readonly ICategoryRepository _categoryRepository;
+    private readonly IBaseRepository<Category> _categoryRepository;
 
-    public CreateTodoItemDtoValidator(ICategoryRepository categoryRepository)
+    public CreateTodoItemRequestValidator(IBaseRepository<Category> categoryRepository)
     {
         _categoryRepository = categoryRepository;
 
@@ -836,98 +857,40 @@ public class CreateTodoItemDtoValidator : AbstractValidator<CreateTodoItemDto>
             .When(x => x.DueTime.HasValue);
     }
 
+    /// <summary>
+    /// Async validation: Check if category exists in database.
+    /// Similar to Laravel's 'exists:categories,id' rule but async.
+    /// </summary>
     private async Task<bool> CategoryExistsAsync(int categoryId, CancellationToken cancellationToken)
     {
-        // Database validation - checks if category exists
-        var allCategories = await _categoryRepository.GetAllAsync();
-        return allCategories.Any(c => c.Id == categoryId);
+        return await _categoryRepository.ExistsAsync(categoryId);
     }
 
+    /// <summary>
+    /// Custom validation: Check if due time is in the future.
+    /// </summary>
     private bool BeAFutureDate(DateTime? dueTime)
     {
         return !dueTime.HasValue || dueTime.Value > DateTime.UtcNow;
-    }
-}
-```
-
-**File:** `TodoApi/Validators/UpdateTodoItemDtoValidator.cs`
-
-```csharp
-using FluentValidation;
-using TodoApi.DTOs;
-using TodoApi.Models;
-
-namespace TodoApi.Validators;
-
-public class UpdateTodoItemDtoValidator : AbstractValidator<UpdateTodoItemDto>
-{
-    private readonly ICategoryRepository _categoryRepository;
-
-    public UpdateTodoItemDtoValidator(ICategoryRepository categoryRepository)
-    {
-        _categoryRepository = categoryRepository;
-
-        // Title validation (optional for update)
-        RuleFor(x => x.Title)
-            .MaximumLength(200).WithMessage("Title cannot exceed 200 characters")
-            .MinimumLength(3).WithMessage("Title must be at least 3 characters")
-            .When(x => !string.IsNullOrEmpty(x.Title));
-
-        // CategoryId validation (optional for update)
-        RuleFor(x => x.CategoryId)
-            .GreaterThan(0).WithMessage("CategoryId must be greater than 0")
-            .MustAsync(CategoryExistsAsync).WithMessage("Category does not exist")
-            .When(x => x.CategoryId.HasValue);
-
-        // DueTime validation
-        RuleFor(x => x.DueTime)
-            .Must(BeAFutureDate).WithMessage("Due time must be in the future")
-            .When(x => x.DueTime.HasValue);
-    }
-
-    private async Task<bool> CategoryExistsAsync(int? categoryId, CancellationToken cancellationToken)
-    {
-        if (!categoryId.HasValue) return true;
-
-        var allCategories = await _categoryRepository.GetAllAsync();
-        return allCategories.Any(c => c.Id == categoryId.Value);
-    }
-
-    private bool BeAFutureDate(DateTime? dueTime)
-    {
-        return !dueTime.HasValue || dueTime.Value > DateTime.UtcNow;
-    }
-}
-```
-
-**File:** `TodoApi/Validators/CreateCategoryDtoValidator.cs`
-
-```csharp
-using FluentValidation;
-using TodoApi.DTOs;
-
-namespace TodoApi.Validators;
-
-public class CreateCategoryDtoValidator : AbstractValidator<CreateCategoryDto>
-{
-    public CreateCategoryDtoValidator()
-    {
-        RuleFor(x => x.Name)
-            .NotEmpty().WithMessage("Category name is required")
-            .MaximumLength(100).WithMessage("Category name cannot exceed 100 characters")
-            .MinimumLength(2).WithMessage("Category name must be at least 2 characters");
     }
 }
 ```
 
 **Key Learning Points:**
 
-1. **Validator Registration**: Validators need dependency injection
+1. **Co-location Pattern**: Validators live with their request DTOs in `Requests/` folder
+
+   - Keeps related code together (similar to Laravel Form Requests)
+   - Easy to find validation rules for a specific request
+   - Clear separation from response DTOs
+
+2. **Validator Registration**: Validators need dependency injection
 
    - Can inject repositories for database validation
    - Similar to Laravel Form Requests with database rules
+   - Auto-discovered by `AddValidatorsFromAssemblyContaining<Program>()`
 
-2. **Validation Rules**:
+3. **Validation Rules**:
 
    - `NotEmpty()`: Required field (like Laravel's `required`)
    - `MaximumLength()`: Max length (like Laravel's `max`)
@@ -935,8 +898,8 @@ public class CreateCategoryDtoValidator : AbstractValidator<CreateCategoryDto>
    - `MustAsync()`: Custom async validation (database checks)
    - `When()`: Conditional validation (like Laravel's `sometimes`)
 
-3. **Async Validation**: Can query database during validation
-   - Check if CategoryId exists
+4. **Async Validation**: Can query database during validation
+   - Check if CategoryId exists using `ExistsAsync()`
    - Check for unique constraints
    - More powerful than Data Annotations
 
@@ -1110,16 +1073,16 @@ public class TodoItemsController : ControllerBase
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<TodoItemResponseDto>> CreateTodoItem(CreateTodoItemDto dto)
+    public async Task<ActionResult<TodoItemResponseDto>> CreateTodoItem(CreateTodoItemRequest request)
     {
         // FluentValidation automatically validates before this point
         // If validation fails, returns 400 with validation errors
 
         var todoItem = new TodoItem
         {
-            Title = dto.Title,
-            CategoryId = dto.CategoryId,
-            DueTime = dto.DueTime,
+            Title = request.Title,
+            CategoryId = request.CategoryId,
+            DueTime = request.DueTime,
             CreatedAt = DateTime.UtcNow,
             IsCompleted = false
         };

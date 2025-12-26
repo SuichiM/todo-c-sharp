@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.OpenApi;
 using NSwag.AspNetCore;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 
 using TodoApi.Data;
 using TodoApi.Repositories;
@@ -20,6 +22,14 @@ builder.Services.AddScoped<IBaseRepository<Category>, CategoryRepository>();
 builder.Services.AddScoped<ITodoRepository, TodoRepository>();
 
 builder.Services.AddControllers();
+
+// Add FluentValidation
+// - Auto-validates DTOs before controller actions
+// - Auto-discovers validators from assembly
+// - Validators use DI (can inject repositories for database validation)
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddFluentValidationClientsideAdapters();
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 builder.Services.AddOpenApiDocument(options =>
 {

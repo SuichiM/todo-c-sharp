@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using TodoApi.Models;
-using TodoApi.DTOs;
+using TodoApi.Resources;
 using TodoApi.Repositories;
+using TodoApi.Requests;
 
 namespace TodoApi.Controllers;
 
@@ -108,6 +109,60 @@ public class TodoItemsController : ControllerBase
         categoryId);
 
     return Ok(TodoItemDto.Collection(todos));
+  }
+
+  /// <summary>
+  /// POST: api/todos
+  /// Creates a new todo item.
+  /// FluentValidation automatically validates the request before this method executes.
+  /// If validation fails, returns 400 Bad Request with validation errors.
+  /// </summary>
+  /// <param name="request">The todo item creation data</param>
+  /// <returns>The created todo item with 201 Created status</returns>
+  [HttpPost]
+  [ProducesResponseType(StatusCodes.Status201Created)]
+  [ProducesResponseType(StatusCodes.Status400BadRequest)]
+  public async Task<ActionResult<TodoItemDto>> CreateTodoItem(CreateTodoItemRequest request)
+  {
+    // At this point, FluentValidation has already validated:
+    // 1. Title (required, min 3, max 200 chars)
+    // 2. CategoryId (not null, > 0)
+    // 3. DueTime (must be future date if provided)
+    //
+    // Similar to Laravel Form Request validation
+
+    // Check if category exists (async validation not supported in automatic validation)
+    if (!await _categoryRepository.ExistsAsync(request.CategoryId!.Value))
+    {
+      return BadRequest(new { message = "Category does not exist" });
+    }
+
+    // Map request to entity
+    var todoItem = new TodoItem
+    {
+      Title = request.Title,
+      CategoryId = request.CategoryId.Value,
+      DueTime = request.DueTime,
+      CreatedAt = DateTime.UtcNow,
+      IsCompleted = false
+    };
+
+    // Save to database via repository
+    var created = await _todoRepository.AddAsync(todoItem);
+
+    // Load the entity with category relationship for response
+    var todoWithCategory = await _todoRepository.GetTodoWithCategoryAsync(created.Id);
+
+    _logger.LogInformation("Created todo item {Id}: {Title}", created.Id, created.Title);
+
+    // Return 201 Created with Location header
+    // Location header: /api/todos/5
+    // Similar to Laravel: return response()->json($todo, 201)->header('Location', ...)
+    return CreatedAtAction(
+      nameof(GetTodoItem),
+      new { id = created.Id },
+      TodoItemDto.Make(todoWithCategory!)
+    );
   }
 
   /// <summary>

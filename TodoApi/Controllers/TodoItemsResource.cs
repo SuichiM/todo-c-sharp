@@ -1,6 +1,6 @@
 using TodoApi.Models;
 
-namespace TodoApi.DTOs;
+namespace TodoApi.Resources;
 
 /// <summary>
 /// TodoItem Data Transfer Object

@@ -18,4 +18,22 @@ public interface IBaseRepository<T> where T : class
   /// Similar to Laravel: Model::where('id', $id)->exists()
   /// </summary>
   Task<bool> ExistsAsync(int id);
+
+  /// <summary>
+  /// Add a new entity to the database.
+  /// Similar to Laravel: Model::create($data)
+  /// </summary>
+  Task<T> AddAsync(T entity);
+
+  /// <summary>
+  /// Update an existing entity.
+  /// Similar to Laravel: $model->update($data)
+  /// </summary>
+  Task<T> UpdateAsync(T entity);
+
+  /// <summary>
+  /// Delete an entity by ID.
+  /// Similar to Laravel: Model::destroy($id)
+  /// </summary>
+  Task<bool> DeleteAsync(int id);
 }

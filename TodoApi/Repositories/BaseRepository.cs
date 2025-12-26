@@ -43,4 +43,42 @@ public class BaseRepository<T> : IBaseRepository<T> where T : class
     var entity = await GetByIdAsync(id);
     return entity != null;
   }
+
+  /// <summary>
+  /// Add a new entity to the database.
+  /// AddAsync() stages the entity, SaveChangesAsync() persists it.
+  /// Similar to Laravel: Model::create($data) but explicit save required.
+  /// </summary>
+  public virtual async Task<T> AddAsync(T entity)
+  {
+    await DbSet.AddAsync(entity);
+    await Context.SaveChangesAsync();
+    return entity;
+  }
+
+  /// <summary>
+  /// Update an existing entity.
+  /// Entity must be tracked by DbContext or attached first.
+  /// </summary>
+  public virtual async Task<T> UpdateAsync(T entity)
+  {
+    DbSet.Update(entity);
+    await Context.SaveChangesAsync();
+    return entity;
+  }
+
+  /// <summary>
+  /// Delete an entity by ID.
+  /// Returns false if entity not found, true if deleted.
+  /// </summary>
+  public virtual async Task<bool> DeleteAsync(int id)
+  {
+    var entity = await GetByIdAsync(id);
+    if (entity == null)
+      return false;
+
+    DbSet.Remove(entity);
+    await Context.SaveChangesAsync();
+    return true;
+  }
 }
