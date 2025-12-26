@@ -1,4 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.OpenApi;
+using NSwag.AspNetCore;
+
 using TodoApi.Data;
 using TodoApi.Repositories;
 using TodoApi.Models;
@@ -17,8 +20,16 @@ builder.Services.AddScoped<IBaseRepository<Category>, CategoryRepository>();
 builder.Services.AddScoped<ITodoRepository, TodoRepository>();
 
 builder.Services.AddControllers();
+
+builder.Services.AddOpenApiDocument(options =>
+{
+    options.Title = "My API";
+    options.Version = "v1";
+});
+
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+//builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
@@ -35,7 +46,11 @@ if (app.Environment.IsDevelopment())
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    //   app.MapOpenApi();
+
+    app.UseOpenApi();
+
+    app.UseSwaggerUi();    // /swagger
 }
 
 app.UseHttpsRedirection();

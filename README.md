@@ -106,3 +106,8 @@ Dockerfile              # Container image definition
 - [ ] Basics on Request handling => DTO + Validator
 - [ ] Implementing RESTful API endpoints for reads Todo Items with Categories
 - [ ] Implementing RESTful API endpoints for creating, updating, and deleting Todo Items
+
+## videos
+
+- [Progress on the learning process](https://www.loom.com/share/d2f13b139575463c9260c073cac589ad)
+- PENDING: [Proyect structure explanation and endpoints working]()
