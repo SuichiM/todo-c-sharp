@@ -34,6 +34,22 @@ services:
     networks:
       - todo-network
 
+  todoui:
+    build:
+      context: TodoUI
+      dockerfile: Dockerfile
+    ports:
+      - "${UI_PORT}:5173"
+    volumes:
+      - ./TodoUI:/app
+      - /app/node_modules
+    env_file:
+      - .env
+    depends_on:
+      - api
+    networks:
+      - todo-network
+
 volumes:
   postgres-data:
 
