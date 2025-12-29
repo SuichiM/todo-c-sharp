@@ -227,6 +227,35 @@ public class TodoItemsController : ControllerBase
   }
 
   /// <summary>
+  /// DELETE: api/todos/5
+  /// Deletes a todo item by ID.
+  /// </summary>
+  /// <param name="id">The ID of the todo item to delete</param>
+  /// <returns>204 No Content if successful, 404 if not found</returns>
+  [HttpDelete("{id}")]
+  [ProducesResponseType(StatusCodes.Status204NoContent)]
+  [ProducesResponseType(StatusCodes.Status404NotFound)]
+  public async Task<IActionResult> DeleteTodoItem(int id)
+  {
+    // Attempt to delete via repository
+    // DeleteAsync returns true if deleted, false if not found
+    var deleted = await _todoRepository.DeleteAsync(id);
+
+    if (!deleted)
+    {
+      _logger.LogWarning("Todo item {Id} not found for deletion", id);
+      return NotFound(new { message = $"Todo item with ID {id} not found" });
+    }
+
+    _logger.LogInformation("Deleted todo item {Id}", id);
+
+    // 204 No Content is the standard response for successful DELETE
+    // No response body needed - the deletion itself is the success indicator
+    // Similar to Laravel: return response()->noContent()
+    return NoContent();
+  }
+
+  /// <summary>
   /// GET: api/todos/completed
   /// Retrieves all completed todos.
   /// </summary>

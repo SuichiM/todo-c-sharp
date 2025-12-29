@@ -21,11 +21,10 @@
   - [x] Create Validators co-located with Request DTOs
   - [x] Register FluentValidation
   - [x] Implement POST endpoint for TODO creation
-  - [ ] (Future) Create Update and Delete requests with validators
+  - [x] Create Update and Delete requests with validators
 - [ ] **Phase 5: Full CRUD Operations**
-  - [ ] Expand BaseRepository with Create/Update/Delete
-  - [ ] Complete TodoItemsController CRUD
-  - [ ] Create CategoriesController
+  - [x] Expand BaseRepository with Create/Update/Delete
+  - [x] Complete TodoItemsController CRUD
 - [ ] **Phase 6: Testing and Documentation**
   - [ ] Add Unit Tests
   - [ ] Add Integration Tests
