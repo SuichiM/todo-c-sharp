@@ -160,9 +160,70 @@ public class TodoItemsController : ControllerBase
     // Similar to Laravel: return response()->json($todo, 201)->header('Location', ...)
     return CreatedAtAction(
       nameof(GetTodoItem),
+      /*TODO: review then, what is this kind of anonymous object */
       new { id = created.Id },
       TodoItemDto.Make(todoWithCategory!)
     );
+  }
+
+  /// <summary>
+  /// PUT: api/todos/5
+  /// Updates an existing todo item.
+  /// Supports partial updates - only provided fields are updated.
+  /// </summary>
+  /// <param name="id">The ID of the todo item to update</param>
+  /// <param name="request">The update data</param>
+  /// <returns>The updated todo item</returns>
+  [HttpPut("{id}")]
+  [ProducesResponseType(StatusCodes.Status200OK)]
+  [ProducesResponseType(StatusCodes.Status404NotFound)]
+  [ProducesResponseType(StatusCodes.Status400BadRequest)]
+  public async Task<ActionResult<TodoItemDto>> UpdateTodoItem(int id, UpdateTodoItemRequest request)
+  {
+    // FluentValidation has already validated:
+    // 1. Title (if provided: min 3, max 200 chars)
+    // 2. CategoryId (if provided: > 0)
+    // 3. DueTime (if provided: must be future date)
+
+    // Check if todo exists
+    // TODO: review why this var hadn't type 
+    var existingTodo = await _todoRepository.GetByIdAsync(id);
+    if (existingTodo == null)
+    {
+      return NotFound(new { message = $"Todo item with ID {id} not found" });
+    }
+
+    // If category is being updated, check if it exists
+    if (request.CategoryId.HasValue)
+    {
+      if (!await _categoryRepository.ExistsAsync(request.CategoryId.Value))
+      {
+        return BadRequest(new { message = "Category does not exist" });
+      }
+    }
+
+    // Apply partial updates (only update provided fields)
+    if (!string.IsNullOrEmpty(request.Title))
+      existingTodo.Title = request.Title;
+
+    if (request.IsCompleted.HasValue)
+      existingTodo.IsCompleted = request.IsCompleted.Value;
+
+    if (request.CategoryId.HasValue)
+      existingTodo.CategoryId = request.CategoryId.Value;
+
+    if (request.DueTime.HasValue)
+      existingTodo.DueTime = request.DueTime;
+
+    // Save changes
+    var updated = await _todoRepository.UpdateAsync(existingTodo);
+
+    // Load with category for response
+    var todoWithCategory = await _todoRepository.GetTodoWithCategoryAsync(updated.Id);
+
+    _logger.LogInformation("Updated todo item {Id}", id);
+
+    return Ok(TodoItemDto.Make(todoWithCategory!));
   }
 
   /// <summary>
