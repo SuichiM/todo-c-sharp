@@ -1,6 +1,6 @@
 # Development stage - use SDK for hot reload
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS development
-WORKDIR /app
+WORKDIR /TodoApi
 
 # Install EF Core tools globally with specific version
 RUN dotnet tool install --global dotnet-ef --version 9.0.0

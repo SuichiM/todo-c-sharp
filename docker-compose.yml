@@ -8,9 +8,12 @@ services:
     ports:
       - "${API_PORT}:8080"
     volumes:
-      - ./TodoApi:/app
-      - /app/bin
-      - /app/obj
+      - ./TodoApi:/TodoApi
+      - ./TodoApi.Tests:/TodoApi.Tests
+      - /TodoApi/bin
+      - /TodoApi/obj
+      - /TodoApi.Tests/bin
+      - /TodoApi.Tests/obj
     env_file:
       - .env
     environment:

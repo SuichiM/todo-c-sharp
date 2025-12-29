@@ -8,11 +8,16 @@ using TodoApi.Data;
 using TodoApi.Repositories;
 using TodoApi.Models;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add DbContext with PostgreSQL
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Add DbContext - conditionally use PostgreSQL or SQLite based on environment
+// This allows tests to override with SQLite without conflicts
+if (builder.Environment.EnvironmentName != "Testing")
+{
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+}
 
 // Register repositories for dependency injection
 // Scoped lifetime: new instance per HTTP request (matches DbContext lifetime)
@@ -72,3 +77,11 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+// Make Program class accessible for integration testing
+// This allows WebApplicationFactory<Program> to reference the startup class
+namespace TodoApi
+{
+    public partial class Program { }
+}
+
