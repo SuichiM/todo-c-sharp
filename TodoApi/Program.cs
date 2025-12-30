@@ -28,6 +28,18 @@ builder.Services.AddScoped<ITodoRepository, TodoRepository>();
 
 builder.Services.AddControllers();
 
+// Add CORS policy to allow requests from the TodoUI frontend
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowTodoUI", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173") // Vite dev server
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 // Add FluentValidation
 // - Auto-validates DTOs before controller actions
 // - Auto-discovers validators from assembly
@@ -69,6 +81,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Enable CORS - must be before UseAuthorization
+app.UseCors("AllowTodoUI");
 
 // app.UseAuthentication();
 
