@@ -14,6 +14,7 @@ import {
 
 import { TabPanel } from "./components/TabPanel";
 import { TodoItem } from "./components/TodoItem";
+import { CreateTodoForm } from "./components/CreateTodoForm";
 
 import {
   usePendingTodos,
@@ -73,7 +74,10 @@ function App() {
             mx: "auto",
           }}
         >
-          <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+          {/* Create Todo Form */}
+          <CreateTodoForm />
+
+          <Box sx={{ mt: 2, borderBottom: 1, borderColor: "divider" }}>
             <Tabs
               value={activeTab}
               onChange={handleTabChange}

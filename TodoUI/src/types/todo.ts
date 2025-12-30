@@ -18,3 +18,13 @@ export interface TodoItem {
   dueTime: string | null; // ISO 8601 datetime string or null
   category: Category;
 }
+
+/**
+ * Request payload for creating a new todo item
+ * Matches CreateTodoItemRequest from API
+ */
+export interface CreateTodoItemRequest {
+  title: string; // Required, 3-200 characters
+  categoryId: number; // Required, must be > 0 and exist
+  dueTime?: string; // Optional, must be future date if provided (ISO 8601)
+}
