@@ -2,6 +2,7 @@ import apiClient from "./client";
 import {
   type TodoItem,
   type CreateTodoItemRequest,
+  type UpdateTodoItemRequest,
   type Category,
 } from "../types/todo";
 
@@ -44,5 +45,16 @@ export const createTodoItem = async (
   data: CreateTodoItemRequest
 ): Promise<TodoItem> => {
   const response = await apiClient.post<TodoItem>("/api/todos", data);
+  return response.data;
+};
+
+/**
+ * Update an existing todo item (partial update)
+ */
+export const updateTodoItem = async (
+  id: number,
+  data: UpdateTodoItemRequest
+): Promise<TodoItem> => {
+  const response = await apiClient.put<TodoItem>(`/api/todos/${id}`, data);
   return response.data;
 };

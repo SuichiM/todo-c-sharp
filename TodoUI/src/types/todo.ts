@@ -28,3 +28,15 @@ export interface CreateTodoItemRequest {
   categoryId: number; // Required, must be > 0 and exist
   dueTime?: string; // Optional, must be future date if provided (ISO 8601)
 }
+
+/**
+ * Request payload for updating a todo item
+ * All fields are optional for partial updates
+ * Matches UpdateTodoItemRequest from API
+ */
+export interface UpdateTodoItemRequest {
+  title?: string; // Optional, 3-200 characters if provided
+  isCompleted?: boolean; // Optional
+  categoryId?: number; // Optional, must be > 0 and exist if provided
+  dueTime?: string | null; // Optional, must be future date if provided (ISO 8601)
+}
