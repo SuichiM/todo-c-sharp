@@ -1,5 +1,17 @@
 import apiClient from "./client";
-import { type TodoItem, type CreateTodoItemRequest } from "../types/todo";
+import {
+  type TodoItem,
+  type CreateTodoItemRequest,
+  type Category,
+} from "../types/todo";
+
+/**
+ * Fetch all categories
+ */
+export const fetchCategories = async (): Promise<Category[]> => {
+  const response = await apiClient.get<Category[]>("/api/categories");
+  return response.data;
+};
 
 /**
  * Fetch all pending (incomplete) todos

@@ -4,3 +4,11 @@ GET {{TodoApi_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+# Categories Endpoints
+
+### Get all categories
+GET {{TodoApi_HostAddress}}/api/categories
+Accept: application/json
+
+###

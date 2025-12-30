@@ -13,7 +13,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
 import { useCreateTodo } from "../hooks/useTodoMutations";
-import { usePendingTodos } from "../hooks/useTodos";
+import { useCategories } from "../hooks/useTodos";
 import { type Category } from "../types/todo";
 
 /**
@@ -28,16 +28,8 @@ export const CreateTodoForm = () => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const createMutation = useCreateTodo();
-  const { data: pendingTodos } = usePendingTodos();
-
-  // Extract unique categories from existing todos
-  const categories: Category[] = pendingTodos
-    ? Array.from(
-        new Map(
-          pendingTodos.map((todo) => [todo.category.id, todo.category])
-        ).values()
-      )
-    : [];
+  const { data: categories = [], isLoading: categoriesLoading } =
+    useCategories();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -145,6 +137,7 @@ export const CreateTodoForm = () => {
                 getOptionLabel={(option) => option.name}
                 value={category}
                 onChange={(_event, newValue) => setCategory(newValue)}
+                loading={categoriesLoading}
                 renderInput={(params) => (
                   <TextField
                     {...params}

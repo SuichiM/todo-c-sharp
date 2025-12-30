@@ -1,3 +1,4 @@
+using System.Security.Cryptography.X509Certificates;
 using TodoApi.Models;
 
 namespace TodoApi.Resources;
@@ -50,13 +51,3 @@ public class TodoItemDto
     return todos.Select(t => Make(t)).ToList();
   }
 }
-
-/// <summary>
-/// Category Data Transfer Object
-/// </summary>
-public class CategoryDto
-{
-  public int Id { get; set; }
-  public string Name { get; set; } = string.Empty;
-}
-
