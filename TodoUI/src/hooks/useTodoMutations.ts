@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createTodoItem, updateTodoItem } from "../api/todos";
+import { createTodoItem, updateTodoItem, deleteTodoItem } from "../api/todos";
 import { todoKeys } from "./useTodos";
 import type { UpdateTodoItemRequest } from "../types/todo";
 
@@ -29,6 +29,22 @@ export const useUpdateTodo = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: UpdateTodoItemRequest }) =>
       updateTodoItem(id, data),
+    onSuccess: () => {
+      // Invalidate all todo queries to refetch updated lists
+      queryClient.invalidateQueries({ queryKey: todoKeys.all });
+    },
+  });
+};
+
+/**
+ * Hook to delete a todo item
+ * Invalidates all todo queries on success to refetch updated data
+ */
+export const useDeleteTodo = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteTodoItem,
     onSuccess: () => {
       // Invalidate all todo queries to refetch updated lists
       queryClient.invalidateQueries({ queryKey: todoKeys.all });

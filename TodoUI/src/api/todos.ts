@@ -58,3 +58,10 @@ export const updateTodoItem = async (
   const response = await apiClient.put<TodoItem>(`/api/todos/${id}`, data);
   return response.data;
 };
+
+/**
+ * Delete a todo item
+ */
+export const deleteTodoItem = async (id: number): Promise<void> => {
+  await apiClient.delete(`/api/todos/${id}`);
+};
