@@ -18,6 +18,28 @@ dotnet restore
 dotnet run
 ```
 
+### other commands
+
+```bash
+# Apply migrations
+dotnet ef database update
+
+# Create a new migration
+dotnet ef migrations add MigrationName
+
+# Build the project
+dotnet build
+
+# Clean the project
+dotnet clean
+
+# restore dependencies
+dotnet restore
+
+# Run tests
+dotnet test
+```
+
 API available at `http://localhost:5296`
 
 ### Run the Frontend UI
@@ -140,6 +162,8 @@ docker-compose.yml       # Multi-container orchestration
 - [x] Basics on Request handling => DTO + Validator
 - [x] Implementing RESTful API endpoints for reads Todo Items with Categories
 - [x] Implementing RESTful API endpoints for creating, updating, and deleting Todo Items
+- [x] Add Swagger for API documentation
+- [x] Add test project and write some minimal integration tests
 - [x] Setting up React frontend with TypeScript and Vite
 - [x] Implementing API client and data fetching with TanStack Query
 - [x] Building todo management UI components
@@ -147,4 +171,5 @@ docker-compose.yml       # Multi-container orchestration
 ## videos
 
 - [Progress on the learning process](https://www.loom.com/share/d2f13b139575463c9260c073cac589ad)
+- [Completiting the project and final thoughts](https://www.loom.com/share/d9ad8dc555864e138c78542e7ada3d2f)
 - PENDING: [Proyect structure explanation and endpoints working]()
