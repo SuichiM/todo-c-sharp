@@ -1,15 +1,16 @@
-# Todo API
+# Todo Application
 
-A REST API built with ASP.NET Core and PostgreSQL.
+A full-stack todo application with ASP.NET Core backend and React frontend.
 
 ## Prerequisites
 
 - [.NET 9.0 SDK](https://dotnet.microsoft.com/download)
+- [Node.js](https://nodejs.org/) (v18+) and [pnpm](https://pnpm.io/)
 - [Docker](https://www.docker.com/get-started) (optional, for containerized deployment)
 
 ## Local Development
 
-### Run the API
+### Run the Backend API
 
 ```bash
 cd TodoApi
@@ -17,13 +18,28 @@ dotnet restore
 dotnet run
 ```
 
-The API will be available at `http://localhost:5296`
+API available at `http://localhost:5296`
 
-### Hot Reload (Auto-restart on changes)
+### Run the Frontend UI
 
 ```bash
+cd TodoUI
+pnpm install
+pnpm dev
+```
+
+UI available at `http://localhost:5173`
+
+### Hot Reload
+
+Backend:
+
+```bash
+cd TodoApi
 dotnet watch run
 ```
+
+Frontend: Vite provides hot reload by default
 
 ## Docker Deployment
 
@@ -35,6 +51,12 @@ Copy `.env.example` to `.env` and configure your settings:
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres123
 POSTGRES_DB=tododb
+DB_PORT=5432
+
+ASPNETCORE_ENVIRONMENT=Development
+API_PORT=8083
+UI_PORT=5173
+VITE_API_URL=http://localhost:${API_PORT}
 ```
 
 ### Build and Run with Docker Compose
@@ -51,36 +73,49 @@ docker-compose down
 ```
 
 The API will be available at `http://localhost:8083`
+The UI will be available at `http://localhost:5173`
 
 ## Project Structure
 
 ```
-TodoApi/
+TodoApi/                  # ASP.NET Core REST API
 ├── Controllers/          # API endpoints
-├── Models/              # Data models
-├── Program.cs           # Application entry point
-├── appsettings.json     # Configuration
-└── TodoApi.csproj       # Project file
+├── Models/              # Domain models
+├── Repositories/        # Data access layer
+├── Requests/            # DTOs and validators
+└── Data/                # EF Core context and configurations
 
-docker-compose.yml       # Multi-container setup
-Dockerfile              # Container image definition
-.env                    # Environment variables (not committed)
+TodoUI/                   # React + TypeScript frontend
+├── src/
+│   ├── components/      # React components
+│   ├── api/            # API client
+│   ├── hooks/          # Custom hooks
+│   └── types/          # TypeScript types
+
+docker-compose.yml       # Multi-container orchestration
 ```
-
-## API Endpoints
-
-### Weather (Example)
-
-- `GET /weatherforecast` - Get weather forecast
 
 ## Technologies
 
-- **ASP.NET Core 9.0** - Web framework
-- **PostgreSQL 16** - Database
-- **Entity Framework Core** - ORM
-- **Docker** - Containerization
+**Backend:**
 
-## Endpoints
+- ASP.NET Core 9.0 - Web framework
+- PostgreSQL 16 - Database
+- Entity Framework Core - ORM
+- FluentValidation - Request validation
+
+**Frontend:**
+
+- React 18 - UI library
+- TypeScript - Type safety
+- Vite - Build tool
+- TanStack Query - Data fetching
+
+**Infrastructure:**
+
+- Docker - Containerization
+
+## API Endpoints
 
 - `GET /api/todos` - Get all todo items
 - `GET /api/todos/{id}` - Get a specific todo item
@@ -88,7 +123,6 @@ Dockerfile              # Container image definition
 - `GET /api/todos/completed` - Get completed todo items
 - `GET /api/todos/pending` - Get pending todo items
 - `GET /api/todos/overdue` - Get overdue todo items
--
 
 ## Learning checkpoints
 
@@ -103,9 +137,12 @@ Dockerfile              # Container image definition
 - [x] Repository pattern for data access
 - [x] Implementing Categories model and repository
 - [x] DTOs for responses shapes similar to Laravel Resources
-- [ ] Basics on Request handling => DTO + Validator
-- [ ] Implementing RESTful API endpoints for reads Todo Items with Categories
-- [ ] Implementing RESTful API endpoints for creating, updating, and deleting Todo Items
+- [x] Basics on Request handling => DTO + Validator
+- [x] Implementing RESTful API endpoints for reads Todo Items with Categories
+- [x] Implementing RESTful API endpoints for creating, updating, and deleting Todo Items
+- [x] Setting up React frontend with TypeScript and Vite
+- [x] Implementing API client and data fetching with TanStack Query
+- [x] Building todo management UI components
 
 ## videos
 
