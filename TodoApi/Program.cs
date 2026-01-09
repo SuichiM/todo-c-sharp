@@ -22,7 +22,7 @@ if (builder.Environment.EnvironmentName != "Testing")
 // Register repositories for dependency injection
 // Scoped lifetime: new instance per HTTP request (matches DbContext lifetime)
 // Similar to Laravel's service container: $this->app->bind()
-builder.Services.AddScoped<IBaseRepository<WeatherForecast>, TodoApi.Repositories.WeatherRepository>();
+builder.Services.AddScoped<IBaseRepository<WeatherForecast>, WeatherRepository>();
 builder.Services.AddScoped<IBaseRepository<Category>, CategoryRepository>();
 builder.Services.AddScoped<ITodoRepository, TodoRepository>();
 
@@ -50,7 +50,7 @@ builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 builder.Services.AddOpenApiDocument(options =>
 {
-    options.Title = "My API";
+    options.Title = "ToDo API";
     options.Version = "v1";
 });
 

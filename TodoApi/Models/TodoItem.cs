@@ -24,4 +24,7 @@ public class TodoItem
   // Nullable (?) allows EF Core flexibility during queries
   // Similar to Laravel's belongsTo() relationship
   public Category? Category { get; set; }
+
+  // Maps to a text[] column in PostgreSQL
+  public List<string>? Tags { get; set; } = new List<string>();
 }

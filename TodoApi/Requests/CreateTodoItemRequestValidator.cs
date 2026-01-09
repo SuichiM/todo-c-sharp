@@ -10,12 +10,8 @@ namespace TodoApi.Requests;
 /// </summary>
 public class CreateTodoItemRequestValidator : AbstractValidator<CreateTodoItemRequest>
 {
-  private readonly IBaseRepository<Category> _categoryRepository;
-
-  public CreateTodoItemRequestValidator(IBaseRepository<Category> categoryRepository)
+  public CreateTodoItemRequestValidator()
   {
-    _categoryRepository = categoryRepository;
-
     // Title validation
     RuleFor(x => x.Title)
         .NotEmpty().WithMessage("Title is required")

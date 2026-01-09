@@ -19,6 +19,8 @@ public class TodoItemDto
   // Nested category info
   public CategoryDto? Category { get; set; }
 
+  public List<string>? Tags { get; set; } = new List<string>();
+
   /// <summary>
   /// Transform a single TodoItem to DTO
   /// Usage: TodoItemDto.Make(todo)
@@ -37,7 +39,8 @@ public class TodoItemDto
       {
         Id = todo.Category.Id,
         Name = todo.Category.Name
-      }
+      },
+      Tags = todo.Tags == null ? new List<string>() : todo.Tags
     };
   }
 

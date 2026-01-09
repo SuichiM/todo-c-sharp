@@ -17,6 +17,7 @@ export interface TodoItem {
   createdAt: string; // ISO 8601 datetime string
   dueTime: string | null; // ISO 8601 datetime string or null
   category: Category;
+  tags?: string[]; // Optional array of tags
 }
 
 /**
